@@ -99,6 +99,10 @@ public class GeneratorController {
             tableConfiguration.setUpdateByPrimaryKeyStatementEnabled(true);
             tableConfiguration.setDeleteByPrimaryKeyStatementEnabled(true);
             tableConfiguration.setTableName(generatorRequrest.getTable());
+            tableConfiguration.setDeleteByExampleStatementEnabled(false);
+            tableConfiguration.setUpdateByExampleStatementEnabled(false);
+            tableConfiguration.setCountByExampleStatementEnabled(false);
+            tableConfiguration.setSelectByExampleStatementEnabled(false);
             tts2.addTableConfiguration(tableConfiguration);
 
             JavaModelGeneratorConfiguration javaModelGeneratorConfiguration = tts2.getJavaModelGeneratorConfiguration();
