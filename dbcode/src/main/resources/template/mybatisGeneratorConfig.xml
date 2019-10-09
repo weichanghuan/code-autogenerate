@@ -6,7 +6,10 @@
 <!--        location="classpath:postgresql-42.2.5.jar" />-->
 	<context id="tts2">
 
-
+		<jdbcConnection driverClass="org.postgresql.Driver"
+						connectionURL="jdbc:postgresql://nonda-ai-qa.c78gosrioj1e.us-east-1.rds.amazonaws.com:5432/"
+						userId="carblock" password="UFzW6bPajwi8YRUJTTF7ENby">
+		</jdbcConnection>
 
 
         <javaModelGenerator targetPackage="io.nonda.infra.push.repository.po" targetProject="/Users/wch/temp/spring-boot-demo/src/main/java">
@@ -22,8 +25,6 @@
 		</javaClientGenerator>
 		 
 
-    
-        
         </context>
 </generatorConfiguration>
 
