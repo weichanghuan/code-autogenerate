@@ -5,7 +5,9 @@ import com.wch.code.generate.custom.ConfigurationParser;
 import com.wch.code.generate.custom.GenerationStarter;
 import com.wch.code.generate.dto.GeneratorRequrest;
 import com.wch.code.generate.dto.GeneratorResultDTO;
+import com.wch.code.generate.model.PGsqlDBDefinition;
 import com.wch.code.generate.share.ZipCompressShare;
+import com.wch.code.generate.util.JsonUtils;
 import org.mybatis.generator.api.ProgressCallback;
 import org.mybatis.generator.config.*;
 import org.mybatis.generator.internal.DefaultShellCallback;
@@ -39,8 +41,13 @@ public class GeneratorController {
 
 
     @RequestMapping(value = "/generate", method = RequestMethod.POST)
-    public void generate(@ModelAttribute GeneratorRequrest generator, HttpServletRequest request, HttpServletResponse response) {
-
+    public void generate(String dataJSON, PGsqlDBDefinition pGsqlDBDefinition,HttpServletRequest request, HttpServletResponse response) {
+        GeneratorRequrest generator=new GeneratorRequrest();
+        try {
+            generator = JsonUtils.fromJSON(dataJSON,GeneratorRequrest.class);
+        }catch (Exception ex){
+            LOGGER.error("GeneratorController.generate is error");
+        }
         if (generator == null
                 || StringUtils.isEmpty(generator.getLibraryName())
                 || StringUtils.isEmpty(generator.getTable())
@@ -49,7 +56,7 @@ public class GeneratorController {
             return;
         }
 
-        List<GeneratorResultDTO> generate = generate(generator);
+        List<GeneratorResultDTO> generate = generate(generator,pGsqlDBDefinition);
         System.out.println(generate.size());
         try {
             response.setHeader("content-type", "application/octet-stream");
@@ -70,7 +77,7 @@ public class GeneratorController {
     }
 
 
-    private static List<GeneratorResultDTO> generate(GeneratorRequrest generatorRequrest) {
+    private static List<GeneratorResultDTO> generate(GeneratorRequrest generatorRequrest, PGsqlDBDefinition pGsqlDBDefinition) {
 
         List<GeneratorResultDTO> generate = new ArrayList<>();
         List<String> warnings = new ArrayList<String>();
@@ -90,20 +97,29 @@ public class GeneratorController {
 
             Context tts2 = config.getContext("tts2");
             //设置数据源
-            tts2.getJdbcConnectionConfiguration().setConnectionURL(tts2.getJdbcConnectionConfiguration().getConnectionURL()+generatorRequrest.getLibraryName());
-            //设置表名
-            TableConfiguration tableConfiguration = new TableConfiguration(tts2);
-            tableConfiguration.setDomainObjectName(generatorRequrest.getDomainObjectName());
-            tableConfiguration.setMapperName(generatorRequrest.getMapperName());
-            tableConfiguration.setInsertStatementEnabled(true);
-            tableConfiguration.setUpdateByPrimaryKeyStatementEnabled(true);
-            tableConfiguration.setDeleteByPrimaryKeyStatementEnabled(true);
-            tableConfiguration.setTableName(generatorRequrest.getTable());
-            tableConfiguration.setDeleteByExampleStatementEnabled(false);
-            tableConfiguration.setUpdateByExampleStatementEnabled(false);
-            tableConfiguration.setCountByExampleStatementEnabled(false);
-            tableConfiguration.setSelectByExampleStatementEnabled(false);
-            tts2.addTableConfiguration(tableConfiguration);
+            JDBCConnectionConfiguration jdbcConnectionConfiguration = tts2.getJdbcConnectionConfiguration();
+            jdbcConnectionConfiguration.setDriverClass(pGsqlDBDefinition.getDriverClass());
+            jdbcConnectionConfiguration.setUserId(pGsqlDBDefinition.getUsername());
+            jdbcConnectionConfiguration.setPassword(pGsqlDBDefinition.getPassword());
+            jdbcConnectionConfiguration.setConnectionURL(pGsqlDBDefinition.getUrl());
+
+            List<String> table = generatorRequrest.getTable();
+
+            for (String t : table) {
+                //设置表名
+                TableConfiguration tableConfiguration = new TableConfiguration(tts2);
+                tableConfiguration.setDomainObjectName(generatorRequrest.getDomainObjectName());
+                tableConfiguration.setMapperName(generatorRequrest.getMapperName());
+                tableConfiguration.setInsertStatementEnabled(true);
+                tableConfiguration.setUpdateByPrimaryKeyStatementEnabled(true);
+                tableConfiguration.setDeleteByPrimaryKeyStatementEnabled(true);
+                tableConfiguration.setTableName(t);
+                tableConfiguration.setDeleteByExampleStatementEnabled(false);
+                tableConfiguration.setUpdateByExampleStatementEnabled(false);
+                tableConfiguration.setCountByExampleStatementEnabled(false);
+                tableConfiguration.setSelectByExampleStatementEnabled(false);
+                tts2.addTableConfiguration(tableConfiguration);
+            }
 
             JavaModelGeneratorConfiguration javaModelGeneratorConfiguration = tts2.getJavaModelGeneratorConfiguration();
             javaModelGeneratorConfiguration.setTargetPackage(generatorRequrest.getDomainObjectNameTarget());

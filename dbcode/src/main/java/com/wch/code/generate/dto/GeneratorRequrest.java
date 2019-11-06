@@ -3,11 +3,12 @@ package com.wch.code.generate.dto;
 import org.omg.CORBA.PRIVATE_MEMBER;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class GeneratorRequrest implements Serializable {
 
     private String libraryName;
-    private String table;
+    private List<String> table;
 
     private String mapperName;
 
@@ -25,11 +26,11 @@ public class GeneratorRequrest implements Serializable {
         this.libraryName = libraryName;
     }
 
-    public String getTable() {
+    public List<String> getTable() {
         return table;
     }
 
-    public void setTable(String table) {
+    public void setTable(List<String> table) {
         this.table = table;
     }
 
