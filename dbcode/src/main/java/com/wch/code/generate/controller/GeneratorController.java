@@ -48,12 +48,29 @@ public class GeneratorController {
         }catch (Exception ex){
             LOGGER.error("GeneratorController.generate is error");
         }
-        if (generator == null
-                || StringUtils.isEmpty(generator.getLibraryName())
-                || StringUtils.isEmpty(generator.getTable())
-                || StringUtils.isEmpty(generator.getDomainObjectName())
-                || StringUtils.isEmpty(generator.getMapperNameTarget())) {
+
+        if (generator == null || StringUtils.isEmpty(generator.getTable())) {
             return;
+        }
+
+        if (StringUtils.isEmpty(generator.getMapperName())) {
+            String table = generator.getTable().get(0);
+            generator.setMapperName(firstCharacterToUpper(replaceUnderlineAndfirstToUpper(table,"_",""))+"Mapper");
+        }
+
+        if (StringUtils.isEmpty(generator.getDomainObjectName())) {
+            String table = generator.getTable().get(0);
+            generator.setDomainObjectName(firstCharacterToUpper(replaceUnderlineAndfirstToUpper(table,"_",""))+"PO");
+        }
+
+        if (StringUtils.isEmpty(generator.getDomainObjectNameTarget())) {
+            String table = generator.getTable().get(0);
+            generator.setDomainObjectNameTarget("io.nonda.saas.repository.model");
+        }
+
+        if (StringUtils.isEmpty(generator.getMapperNameTarget())) {
+            String table = generator.getTable().get(0);
+            generator.setMapperNameTarget("io.nonda.saas.repository.dao.mybatis.pgsql");
         }
 
         List<GeneratorResultDTO> generate = generate(generator,pGsqlDBDefinition);
@@ -141,6 +158,41 @@ public class GeneratorController {
         }
         return generate;
 
+    }
+
+    /**
+     * 首字母大写
+     *
+     * @param srcStr
+     * @return
+     */
+    public static String firstCharacterToUpper(String srcStr) {
+        return srcStr.substring(0, 1).toUpperCase() + srcStr.substring(1);
+    }
+
+    /**
+     * 替换字符串并让它的下一个字母为大写
+     * @param srcStr
+     * @param org
+     * @param ob
+     * @return
+     */
+    public static String replaceUnderlineAndfirstToUpper(String srcStr,String org,String ob)
+    {
+        String newString = "";
+        int first=0;
+        while(srcStr.indexOf(org)!=-1)
+        {
+            first=srcStr.indexOf(org);
+            if(first!=srcStr.length())
+            {
+                newString=newString+srcStr.substring(0,first)+ob;
+                srcStr=srcStr.substring(first+org.length(),srcStr.length());
+                srcStr=firstCharacterToUpper(srcStr);
+            }
+        }
+        newString=newString+srcStr;
+        return newString;
     }
 
 
