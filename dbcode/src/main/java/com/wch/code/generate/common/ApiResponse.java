@@ -6,7 +6,6 @@ import lombok.Getter;
 
 /**
  * API格式封装
- * @author gaowenfeng
  */
 @Data
 public class ApiResponse {
