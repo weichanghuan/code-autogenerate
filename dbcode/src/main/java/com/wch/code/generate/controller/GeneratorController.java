@@ -5,8 +5,9 @@ import com.wch.code.generate.custom.ConfigurationParser;
 import com.wch.code.generate.custom.GenerationStarter;
 import com.wch.code.generate.dto.GeneratorRequrest;
 import com.wch.code.generate.dto.GeneratorResultDTO;
-import com.wch.code.generate.model.PGsqlDBDefinition;
+import com.wch.code.generate.model.SqlDBDefinition;
 import com.wch.code.generate.share.ZipCompressShare;
+import com.wch.code.generate.util.JSONUtil;
 import com.wch.code.generate.util.JsonUtils;
 import org.mybatis.generator.api.ProgressCallback;
 import org.mybatis.generator.config.*;
@@ -17,7 +18,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -41,7 +41,8 @@ public class GeneratorController {
 
 
     @RequestMapping(value = "/generate", method = RequestMethod.POST)
-    public void generate(String dataJSON, PGsqlDBDefinition pGsqlDBDefinition,HttpServletRequest request, HttpServletResponse response) {
+    public void generate(String dataJSON, SqlDBDefinition sqlDBDefinition, HttpServletRequest request, HttpServletResponse response) {
+        LOGGER.info("GeneratorController.generate,SqlDBDefinition={}", JSONUtil.toJSonString(sqlDBDefinition));
         GeneratorRequrest generator=new GeneratorRequrest();
         try {
             generator = JsonUtils.fromJSON(dataJSON,GeneratorRequrest.class);
@@ -73,7 +74,7 @@ public class GeneratorController {
             generator.setMapperNameTarget("io.nonda.saas.repository.dao.mybatis.pgsql");
         }
 
-        List<GeneratorResultDTO> generate = generate(generator,pGsqlDBDefinition);
+        List<GeneratorResultDTO> generate = generate(generator, sqlDBDefinition);
         System.out.println(generate.size());
         try {
             response.setHeader("content-type", "application/octet-stream");
@@ -94,7 +95,7 @@ public class GeneratorController {
     }
 
 
-    private static List<GeneratorResultDTO> generate(GeneratorRequrest generatorRequrest, PGsqlDBDefinition pGsqlDBDefinition) {
+    private static List<GeneratorResultDTO> generate(GeneratorRequrest generatorRequrest, SqlDBDefinition sqlDBDefinition) {
 
         List<GeneratorResultDTO> generate = new ArrayList<>();
         List<String> warnings = new ArrayList<String>();
@@ -115,10 +116,10 @@ public class GeneratorController {
             Context tts2 = config.getContext("tts2");
             //设置数据源
             JDBCConnectionConfiguration jdbcConnectionConfiguration = tts2.getJdbcConnectionConfiguration();
-            jdbcConnectionConfiguration.setDriverClass(pGsqlDBDefinition.getDriverClass());
-            jdbcConnectionConfiguration.setUserId(pGsqlDBDefinition.getUsername());
-            jdbcConnectionConfiguration.setPassword(pGsqlDBDefinition.getPassword());
-            jdbcConnectionConfiguration.setConnectionURL(pGsqlDBDefinition.getUrl());
+            jdbcConnectionConfiguration.setDriverClass(sqlDBDefinition.getDriverClass());
+            jdbcConnectionConfiguration.setUserId(sqlDBDefinition.getUsername());
+            jdbcConnectionConfiguration.setPassword(sqlDBDefinition.getPassword());
+            jdbcConnectionConfiguration.setConnectionURL(sqlDBDefinition.getUrl());
 
             List<String> table = generatorRequrest.getTable();
 
@@ -130,11 +131,12 @@ public class GeneratorController {
                 tableConfiguration.setInsertStatementEnabled(true);
                 tableConfiguration.setUpdateByPrimaryKeyStatementEnabled(true);
                 tableConfiguration.setDeleteByPrimaryKeyStatementEnabled(true);
-                tableConfiguration.setTableName(t);
+                tableConfiguration.setSelectByPrimaryKeyStatementEnabled(true);
                 tableConfiguration.setDeleteByExampleStatementEnabled(false);
                 tableConfiguration.setUpdateByExampleStatementEnabled(false);
                 tableConfiguration.setCountByExampleStatementEnabled(false);
                 tableConfiguration.setSelectByExampleStatementEnabled(false);
+                tableConfiguration.setTableName(t);
                 tts2.addTableConfiguration(tableConfiguration);
             }
 

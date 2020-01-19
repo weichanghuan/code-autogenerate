@@ -7,10 +7,16 @@
     <!--        location="classpath:postgresql-42.2.5.jar" />-->
     <context id="tts2">
 
-        <jdbcConnection driverClass="org.postgresql.Driver"
-                        connectionURL="jdbc:postgresql://nonda-ai-qa.c78gosrioj1e.us-east-1.rds.amazonaws.com:5432/"
+<!--        <jdbcConnection driverClass="org.postgresql.Driver"-->
+<!--                        connectionURL="jdbc:postgresql://nonda-ai-qa.c78gosrioj1e.us-east-1.rds.amazonaws.com:5432/"-->
+<!--                        userId="" password="">-->
+<!--        </jdbcConnection>-->
+
+        <jdbcConnection driverClass=""
+                        connectionURL=""
                         userId="" password="">
         </jdbcConnection>
+
         <commentGenerator>
                    
             <property name="suppressDate" value="true"/>
